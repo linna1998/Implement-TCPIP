@@ -121,6 +121,12 @@
     <ClCompile Include="BasicRouter.cc" />
     <ClCompile Include="Client.cc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Client1.click" />
+    <None Include="Client2.click" />
+    <None Include="Client3.click" />
+    <None Include="Router.click" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -39,4 +39,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Client1.click">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="Client2.click">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="Client3.click">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="Router.click">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
 </Project>
