@@ -110,6 +110,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BasicClassifier.hh" />
+    <ClInclude Include="BasicRouter.hh" />
+    <ClInclude Include="Client.hh" />
+    <ClInclude Include="Packets.hh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BasicClassifier.cc" />
+    <ClCompile Include="BasicRouter.cc" />
+    <ClCompile Include="Client.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
