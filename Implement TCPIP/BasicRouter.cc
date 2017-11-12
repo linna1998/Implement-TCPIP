@@ -48,7 +48,7 @@ int BasicRouter::configure(Vector<String> &conf, ErrorHandler *errh)
 		return -1;
 	}
 
-	if (id == 2)
+	/*if (id == 2)
 	{
 		click_chatter("Set forwarding table of node %d", id);
 		_forwarding_table.set(1, 1);
@@ -77,7 +77,8 @@ int BasicRouter::configure(Vector<String> &conf, ErrorHandler *errh)
 		_forwarding_table.set(4, 2);
 		_forwarding_table.set(5, 0);
 		_forwarding_table.set(6, 6);
-	}
+	}*/
+
 	return 0;
 }
 
@@ -118,8 +119,10 @@ void BasicRouter::run_timer(Timer *timer)
 			format->size = sizeof(struct PacketHeader) + length;
 			char *data = (char*)(packet->data() + sizeof(struct PacketHeader));
 			int count = 0;
+			//click_chatter("MAX_NODES : %d", MAX_NODES);
 			for (int j = 0; j < MAX_NODES; j++)
 			{
+				//click_chatter("j : %d", j);
 				//if(Neighbours[j]==0)break;
 				//itoa(Neighbours[j],data+8*j,10);  // 10 means the positional notation
 				bool ifexist = _neighbours_table.get(j);
@@ -140,13 +143,27 @@ void BasicRouter::run_timer(Timer *timer)
 					s[k] = '0';
 				memcpy(data + 8 * count, s, 8);
 				count++;
+				//click_chatter("click_chatter( %c , data);");
+				//click_chatter(" %c", data);
 			}
+			//click_chatter("Fill the count part with count: %d", count);
 			for (int j = count; j < MAX_NODES; ++j)
 			{
+				//click_chatter("Before memset.");
 				memset(data + 8 * j, '0', 8);
+				//click_chatter("After memset.");
+				// click_chatter("%c", *(data + j));
 			}
-			output(i).push(packet);
+			//click_chatter("Finish the memset part");
+
 			click_chatter("Sending new Edge packet on port %d", i);
+			//click_chatter("Before print data.");
+			//for (int j = 0; j < length; j++)
+			//{
+				//click_chatter("%c", *(data + j));
+			//}
+			//click_chatter("After print data.");
+			output(i).push(packet);
 		}
 		_timerEdge.schedule_after_sec(_periodEdge);
 	}
@@ -190,22 +207,33 @@ void BasicRouter::push(int port, Packet *packet)
 		int row = header->source;
 		for (int i = 0; i < MAX_NODES; ++i)
 		{
+			//click_chatter("Enter circle %d", i);
 			int col = 0;
 			char s[9];
+			//click_chatter("Before Read data");
 			for (int j = 0; j < 8; ++j)
 			{
 				s[j] = *(data + 8 * i + j);
 			}
+			//click_chatter("After Read data");
+			//click_chatter("Before compute col");
 			int k = 7;
-			while (s[k] == '0')
-				k--;
-			for (int j = k; j >= 0; --j)
+			while (s[k] == '0'&& k > 0) k--;
+			//click_chatter("Print k %d", k);
+			if ((k == 0 && s[k] != '0') || (k > 0))
 			{
-				col = col * 10 + s[j] - '0';
+				for (int j = (int)k; j >= 0; j--)
+				{
+					col = col * 10 + s[j] - '0';
+					//click_chatter("Print col %d", col);
+				}
 			}
+			//click_chatter("After compute col");
 			//if(col==0)continue;
+			//if (col == 0)break;
 			if (col == 0)break;
 			//int col=atoi(data+8*i);
+			//click_chatter("Set Distance %d to %d", row, col);
 			Distance[row][col] = 1;
 			Distance[col][row] = 1;
 		}
@@ -215,6 +243,7 @@ void BasicRouter::push(int port, Packet *packet)
 		else
 		{
 			header->ttl -= 1;
+			click_chatter("Flood the pcket to all other ports.");
 			// Flood the pcket to all other ports.
 			// !!!
 			for (int i = 0; i < portNumber; ++i)
@@ -313,7 +342,7 @@ void BasicRouter::Dijkstra()
 	}
 	for (int i = 1; i <= MAX_NODES; i++)  // Update
 	{
-		click_chatter("Update the forwarding table to node %d", i);
+		//click_chatter("Update the forwarding table to node %d", i);
 		if (i == id)  // Throw this packet away.
 		{
 			_forwarding_table.set(id, 0);
@@ -332,7 +361,7 @@ void BasicRouter::Dijkstra()
 		if (prev[tmp] == s)
 		{
 			_forwarding_table.set(i, tmp);
-			click_chatter("Update node %d's forwarding table with next_node %d", i, tmp);
+			//click_chatter("Update node %d's forwarding table with next_node %d", i, tmp);
 		}
 	}
 	//_forwarding_table.set(1, 1);

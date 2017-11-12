@@ -5,7 +5,7 @@
 #include <click/hashtable.hh>
 
 CLICK_DECLS
-#define MAX_NODES 6
+#define MAX_NODES 8
 #define MY_INFINITY 100000      /* a number larger than every maximum path */
 class BasicRouter : public Element
 {
