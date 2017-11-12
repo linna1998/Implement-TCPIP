@@ -5,7 +5,7 @@
 #include <click/hashtable.hh>
 
 CLICK_DECLS
-
+#define MAX_NODES 100
 class BasicRouter : public Element 
 {
 public:
@@ -18,9 +18,13 @@ public:
 	void push(int port, Packet *packet);
 	int initialize(ErrorHandler*);
 
+	int shortest_path(int s, int t, int n);
+	void Dijkstra(int n);
+
 private:
 	HashTable<int, int> _ports_table;
-
+	int Distance[MAX_NODES][MAX_NODES];
+	int id;  // The id number of the router.
 };
 
 CLICK_ENDDECLS
