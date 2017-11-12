@@ -49,7 +49,13 @@
     <None Include="Client3.click">
       <Filter>源文件</Filter>
     </None>
-    <None Include="Router.click">
+    <None Include="Router1.click">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="Router3.click">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="Router2.click">
       <Filter>源文件</Filter>
     </None>
   </ItemGroup>

@@ -33,6 +33,38 @@ int BasicRouter::initialize(ErrorHandler *errh)
 	_timerHello.schedule_after_sec(_periodHello);
 	_timerEdge.initialize(this);
 	_timerEdge.schedule_after_sec(_periodEdge);
+
+	if (id == 2)
+	{
+		click_chatter("Set forwarding table of router %d", id);
+		_forwarding_table.set(1, 1);
+		_forwarding_table.set(2, 0);
+		_forwarding_table.set(3, 3);
+		_forwarding_table.set(4, 3);
+		_forwarding_table.set(5, 5);
+		_forwarding_table.set(6, 5);
+	}
+	else if (id == 3)
+	{
+		click_chatter("Set forwarding table of router %d", id);
+		_forwarding_table.set(1, 2);
+		_forwarding_table.set(2, 2);
+		_forwarding_table.set(3, 0);
+		_forwarding_table.set(4, 4);
+		_forwarding_table.set(5, 2);
+		_forwarding_table.set(6, 2);
+	}
+	else if (id == 5)
+	{
+		click_chatter("Set forwarding table of router %d", id);
+		_forwarding_table.set(1, 2);
+		_forwarding_table.set(2, 2);
+		_forwarding_table.set(3, 2);
+		_forwarding_table.set(4, 2);
+		_forwarding_table.set(5, 0);
+		_forwarding_table.set(6, 6);
+	}
+
 	return 0;
 }
 
@@ -298,9 +330,9 @@ void BasicRouter::Dijkstra()
 		click_chatter("Update node %d's forwarding table with next_node %d", i, next_node);
 	}*/
 	
-	_forwarding_table.set(1, 1);
-	_forwarding_table.set(2, 2);
-	_forwarding_table.set(3, 3);
+	//_forwarding_table.set(1, 1);
+	//_forwarding_table.set(2, 2);
+	//_forwarding_table.set(3, 3);
 
 	return;
 }

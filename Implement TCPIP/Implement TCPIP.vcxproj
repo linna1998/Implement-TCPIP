@@ -125,7 +125,9 @@
     <None Include="Client1.click" />
     <None Include="Client2.click" />
     <None Include="Client3.click" />
-    <None Include="Router.click" />
+    <None Include="Router2.click" />
+    <None Include="Router3.click" />
+    <None Include="Router1.click" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

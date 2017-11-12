@@ -12,11 +12,9 @@ define($dev8 veth8, $addrDev8 a6:23:4c:4e:69:aa)
 define($dev9 veth9, $addrDev9 ae:92:25:ce:5d:22)
 define($dev10 veth10, $addrDev10 d6:e4:ec:50:09:31)
 
-rp :: LossyRouterPort(DEV $dev10, IN_MAC $addrDev10 , OUT_MAC $addrDev9, LOSS 1, DELAY 0.2 );
+rp1 :: LossyRouterPort(DEV $dev8, IN_MAC $addrDev8 , OUT_MAC $addrDev7, LOSS 1, DELAY 0.2 );
+rp2 :: LossyRouterPort(DEV $dev9, IN_MAC $addrDev9 , OUT_MAC $addrDev10, LOSS 1, DELAY 0.2 );
 
-client::BasicClient(MY_ADDRESS 6, OTHER_ADDRESS 1, DELAY 2);
-bc::BasicClassifier;
-client->rp->bc
-bc[0]->[0]client;
-bc[1]->Discard;
-bc[2]->[1]client;
+router::BasicRouter(ID 5);
+rp1->[0]router[0]->rp1;
+rp2->[1]router[1]->rp2;
