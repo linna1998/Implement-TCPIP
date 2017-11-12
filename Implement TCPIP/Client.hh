@@ -5,7 +5,7 @@
 
 CLICK_DECLS
 
-class BasicClient : public Element 
+class BasicClient : public Element
 {
 public:
 	BasicClient();

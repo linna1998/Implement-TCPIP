@@ -5,7 +5,7 @@
 
 CLICK_DECLS
 
-class BasicClassifier : public Element 
+class BasicClassifier : public Element
 {
 public:
 	BasicClassifier();

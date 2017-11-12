@@ -8,7 +8,7 @@ define($dev4 veth4, $addrDev4 ea:21:81:06:62:10)
 define($dev5 veth5, $addrDev5 26:57:6a:f5:2d:13)
 define($dev6 veth6, $addrDev6 92:9c:22:8a:f8:69)
 
-rp :: LossyRouterPort(DEV $dev1, IN_MAC $addrDev1 , OUT_MAC $addrDev2, LOSS 0.9, DELAY 0.2 );
+rp :: LossyRouterPort(DEV $dev1, IN_MAC $addrDev1 , OUT_MAC $addrDev2, LOSS 1, DELAY 0.2 );
 
 client::BasicClient(MY_ADDRESS 1, OTHER_ADDRESS 2, DELAY 2);
 bc::BasicClassifier;

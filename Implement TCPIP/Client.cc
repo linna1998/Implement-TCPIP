@@ -8,7 +8,7 @@
 
 CLICK_DECLS
 
-BasicClient::BasicClient() : _timerTO(this), _timerHello(this) 
+BasicClient::BasicClient() : _timerTO(this), _timerHello(this)
 {
 	_seq = 0;
 	_period = 3;
@@ -22,11 +22,11 @@ BasicClient::BasicClient() : _timerTO(this), _timerHello(this)
 
 BasicClient::~BasicClient() {}
 
-int BasicClient::initialize(ErrorHandler *errh) 
+int BasicClient::initialize(ErrorHandler *errh)
 {
 	_timerTO.initialize(this);
 	_timerHello.initialize(this);
-	if (_delay>0) 
+	if (_delay > 0)
 	{
 		_timerTO.schedule_after_sec(_delay);
 	}
@@ -34,7 +34,7 @@ int BasicClient::initialize(ErrorHandler *errh)
 	return 0;
 }
 
-int BasicClient::configure(Vector<String> &conf, ErrorHandler *errh) 
+int BasicClient::configure(Vector<String> &conf, ErrorHandler *errh)
 {
 	if (cp_va_kparse(conf, this, errh,
 		"MY_ADDRESS", cpkP + cpkM, cpUnsigned, &_my_address,
@@ -43,16 +43,16 @@ int BasicClient::configure(Vector<String> &conf, ErrorHandler *errh)
 		"PERIOD", cpkP, cpUnsigned, &_period,
 		"PERIOD_HELLO", cpkP, cpUnsigned, &_periodHello,
 		"TIME_OUT", cpkP, cpUnsigned, &_time_out,
-		cpEnd) < 0) 
+		cpEnd) < 0)
 	{
 		return -1;
 	}
 	return 0;
 }
 
-void BasicClient::run_timer(Timer *timer) 
+void BasicClient::run_timer(Timer *timer)
 {
-	if (timer == &_timerTO) 
+	if (timer == &_timerTO)
 	{
 		click_chatter("Retransmitting packet %u for %d time", _seq, transmissions);
 		WritablePacket *packet = Packet::make(0, 0, sizeof(struct PacketHeader) + 5, 0);
@@ -69,7 +69,7 @@ void BasicClient::run_timer(Timer *timer)
 		transmissions++;
 		_timerTO.schedule_after_sec(_time_out);
 	}
-	else if (timer == &_timerHello) 
+	else if (timer == &_timerHello)
 	{
 		click_chatter("Sending new Hello packet");
 		WritablePacket *packet = Packet::make(0, 0, sizeof(struct PacketHeader), 0);
@@ -81,16 +81,16 @@ void BasicClient::run_timer(Timer *timer)
 		output(0).push(packet);
 		_timerHello.schedule_after_sec(_periodHello);
 	}
-	else 
+	else
 	{
 		assert(false);
 	}
 }
 
-void BasicClient::push(int port, Packet *packet) 
+void BasicClient::push(int port, Packet *packet)
 {
 	assert(packet);
-	if (port == 0) 
+	if (port == 0)
 	{ //data -> send ack
 		struct PacketHeader *header = (struct PacketHeader *)packet->data();
 		click_chatter("Received packet %u from %u", header->sequence, header->source);
@@ -105,23 +105,23 @@ void BasicClient::push(int port, Packet *packet)
 		packet->kill();
 		output(0).push(ack);
 	}
-	else if (port == 1) 
+	else if (port == 1)
 	{ //received ack -> schedule new data packet
 		struct PacketHeader *header = (struct PacketHeader *)packet->data();
 		click_chatter("Received ack %u from %u", header->sequence, header->source);
-		if (header->sequence == _seq) 
+		if (header->sequence == _seq)
 		{
 			_timerTO.unschedule();
 			_seq++;
 			transmissions = 0;
 			_timerTO.schedule_after_sec(_period);
 		}
-		else 
+		else
 		{ //received wrong sequence number
 			packet->kill();
 		}
 	}
-	else 
+	else
 	{
 		packet->kill();
 	}
