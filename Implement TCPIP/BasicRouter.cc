@@ -33,10 +33,24 @@ int BasicRouter::initialize(ErrorHandler *errh)
 	_timerHello.schedule_after_sec(_periodHello);
 	_timerEdge.initialize(this);
 	_timerEdge.schedule_after_sec(_periodEdge);
+	return 0;
+}
+
+int BasicRouter::configure(Vector<String> &conf, ErrorHandler *errh)
+{
+	if (cp_va_kparse(conf, this, errh,
+		"ID", cpkP + cpkM, cpUnsigned, &id,
+		"PORT_NUMBER", cpkP + cpkM, cpUnsigned, &portNumber,
+		"PERIOD_EDGE", cpkP, cpUnsigned, &_periodEdge,
+		"PERIOD_HELLO", cpkP, cpUnsigned, &_periodHello,
+		cpEnd) < 0)
+	{
+		return -1;
+	}
 
 	if (id == 2)
 	{
-		click_chatter("Set forwarding table of router %d", id);
+		click_chatter("Set forwarding table of node %d", id);
 		_forwarding_table.set(1, 1);
 		_forwarding_table.set(2, 0);
 		_forwarding_table.set(3, 3);
@@ -46,7 +60,7 @@ int BasicRouter::initialize(ErrorHandler *errh)
 	}
 	else if (id == 3)
 	{
-		click_chatter("Set forwarding table of router %d", id);
+		click_chatter("Set forwarding table of node %d", id);
 		_forwarding_table.set(1, 2);
 		_forwarding_table.set(2, 2);
 		_forwarding_table.set(3, 0);
@@ -56,27 +70,13 @@ int BasicRouter::initialize(ErrorHandler *errh)
 	}
 	else if (id == 5)
 	{
-		click_chatter("Set forwarding table of router %d", id);
+		click_chatter("Set forwarding table of node %d", id);
 		_forwarding_table.set(1, 2);
 		_forwarding_table.set(2, 2);
 		_forwarding_table.set(3, 2);
 		_forwarding_table.set(4, 2);
 		_forwarding_table.set(5, 0);
 		_forwarding_table.set(6, 6);
-	}
-
-	return 0;
-}
-
-int BasicRouter::configure(Vector<String> &conf, ErrorHandler *errh)
-{
-	if (cp_va_kparse(conf, this, errh,
-		"ID", cpkP + cpkM, cpUnsigned, &id,
-		"PERIOD_EDGE", cpkP, cpUnsigned, &_periodEdge,
-		"PERIOD_HELLO", cpkP, cpUnsigned, &_periodHello,
-		cpEnd) < 0)
-	{
-		return -1;
 	}
 	return 0;
 }
@@ -85,8 +85,8 @@ void BasicRouter::run_timer(Timer *timer)
 {
 	if (timer == &_timerHello)
 	{
-		// 3 is the number of ports.
-		for (int i = 0; i < 3; ++i)
+		// !!!
+		for (int i = 0; i < portNumber; ++i)
 		{
 			WritablePacket *packet = Packet::make(0, 0, sizeof(struct PacketHeader), 0);
 			memset(packet->data(), 0, packet->length());
@@ -104,7 +104,8 @@ void BasicRouter::run_timer(Timer *timer)
 	{
 		// Broadcast to neighbours.
 		// 3 is the number of ports.
-		for (int i = 0; i < 3; ++i)
+		// !!!
+		for (int i = 0; i < portNumber; ++i)
 		{
 			int length = 8 * MAX_NODES;
 			WritablePacket *packet = Packet::make(0, 0, sizeof(struct PacketHeader) + length, 0);
@@ -215,7 +216,8 @@ void BasicRouter::push(int port, Packet *packet)
 		{
 			header->ttl -= 1;
 			// Flood the pcket to all other ports.
-			for (int i = 0; i < 3; ++i)
+			// !!!
+			for (int i = 0; i < portNumber; ++i)
 			{
 				if (i == port)
 					continue;
@@ -252,88 +254,91 @@ void BasicRouter::push(int port, Packet *packet)
 	}
 }
 
-// Return the next node on the path from s to t.
-int BasicRouter::shortest_path(int s, int t, int n)
-// n = number of nodes
-{
-	enum Label { permanent, tentative };  // Label state.
-	/* the path being worked on */
-	struct state
-	{
-		int predecessor;  // Previous node.
-		int length;  // Length from source to this node.
-		Label label;
-	}state[MAX_NODES];
-	int k;
-	int min;
-	struct state *p;
-	// Initialize state.
-	for (p = &state[0]; p < &state[n]; p++)
-	{
-		p->predecessor = -1;
-		p->length = MY_INFINITY;
-		p->label = tentative;
-	}
-	state[t].length = 0;
-	state[t].label = permanent;
-	int count = 0;
-	k = t;
-	/*k is the initial working node */
-	do
-	{
-		count++;
-		/* is  the better path from k? */
-		for (int I =1; I <=n; I++)
-		{
-			/*this graph has n nodes */
-			if (Distance[k][I] != 0 && state[I].label == tentative)
-			{
-				if (state[k].length + Distance[k][I] < state[I].length)
-				{
-					state[I].predecessor = k;
-					state[I].length = state[k].length + Distance[k][I];
-				}
-			}
-		}
-		/* Find the tentatively labeled node with the smallest label. */
-		k = 0;
-		min = MY_INFINITY;
-		for (int I = 1; I <= n; I++)
-		{
-			if (state[I].label == tentative && state[I].length < min)
-			{
-				min = state[I].length;
-				k = I;
-			}
-		}
-		state[k].label = permanent;
-	} while (k != s && count <= MAX_NODES);
-	click_chatter("Node %d to node %d's next node is %d", s, t, state[0].predecessor);
-	return state[0].predecessor;
-}
-
 void BasicRouter::Dijkstra()
 {
 	click_chatter("Doing Dijkstra Algorithm.");
-	/*for (int i = 1; i <= MAX_NODES; i++)
+	/*
+	for (int i = 1; i <= MAX_NODES; i++)
 	{
 		for (int j = 1; j <= MAX_NODES; j++)
 		{
 			click_chatter("Distance from %d to %d is %d", i, j, Distance[i][j]);
 		}
 	}
-	for (int i = 1; i <= MAX_NODES; i++)
+	*/
+	// Dijkstra
+	int s = id;
+	bool visit[MAX_NODES + 1] = { 0 };
+	int dist[MAX_NODES + 1] = { 0 }, prev[MAX_NODES + 1] = { 0 };
+	for (int i = 1; i <= MAX_NODES; ++i) //initialize
+	{
+		if (Distance[s][i] != MY_INFINITY)
+		{
+			dist[i] = Distance[s][i];
+			prev[i] = s;
+		}
+		else
+			dist[i] = MY_INFINITY;
+	}
+	visit[s] = true; prev[s] = -1;
+	dist[s] = 0;
+	int replace = s, replaceD = MY_INFINITY, N = MAX_NODES - 1;
+	while (N > 0)//run
+	{
+		N--;
+		replaceD = MY_INFINITY;
+		for (int i = 1; i <= MAX_NODES; ++i)
+		{
+			if (!visit[i])
+			{
+				if (dist[i] < replaceD)
+				{
+					replaceD = dist[i];
+					replace = i;
+				}
+			}
+		}
+		visit[replace] = true;
+		for (int i = 1; i <= MAX_NODES; ++i)
+		{
+			if (!visit[i])
+			{
+				if (dist[i] > replaceD + Distance[replace][i])
+				{
+					dist[i] = replaceD + Distance[replace][i];
+					prev[i] = replace;
+				}
+			}
+		}
+	}
+	for (int i = 1; i <= MAX_NODES; i++)  // Update
 	{
 		click_chatter("Update the forwarding table to node %d", i);
-		int next_node = shortest_path(id, i, MAX_NODES);
-		_forwarding_table.set(i, next_node);
-		click_chatter("Update node %d's forwarding table with next_node %d", i, next_node);
-	}*/
-	
+		if (i == id)  // Throw this packet away.
+		{
+			_forwarding_table.set(id, 0);
+			continue;
+		}
+		int tmp = i;
+		while (prev[tmp] != s)
+		{
+			if (prev[tmp] == 0)
+			{
+				_forwarding_table.set(i, 0);
+				break;
+			}
+			tmp = prev[tmp];
+		}
+		if (prev[tmp] == s)
+		{
+			_forwarding_table.set(i, tmp);
+			click_chatter("Update node %d's forwarding table with next_node %d", i, tmp);
+		}
+	}
 	//_forwarding_table.set(1, 1);
 	//_forwarding_table.set(2, 2);
 	//_forwarding_table.set(3, 3);
-
+	//_forwarding_table.set(4, 0);
 	return;
 }
 

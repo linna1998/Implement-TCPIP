@@ -25,7 +25,7 @@ public:
 	int shortest_path(int s, int t, int n);
 	void Dijkstra();
 
-private:
+private:	
 	Timer _timerHello;
 	uint32_t _periodHello;
 	Timer _timerEdge;
@@ -34,7 +34,8 @@ private:
 	HashTable<int, int> _ports_table;
 	HashTable<int, bool> _neighbours_table;
 	int Distance[MAX_NODES + 1][MAX_NODES + 1];
-	int id;  // The id number of the router.
+	int id;  // The id number of the router
+	int portNumber;  // The number of the ports.
 	//int Neighbours[MAX_NODES];  // Neighbours
 };
 

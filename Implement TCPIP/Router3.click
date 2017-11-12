@@ -15,6 +15,6 @@ define($dev10 veth10, $addrDev10 d6:e4:ec:50:09:31)
 rp1 :: LossyRouterPort(DEV $dev8, IN_MAC $addrDev8 , OUT_MAC $addrDev7, LOSS 1, DELAY 0.2 );
 rp2 :: LossyRouterPort(DEV $dev9, IN_MAC $addrDev9 , OUT_MAC $addrDev10, LOSS 1, DELAY 0.2 );
 
-router::BasicRouter(ID 5);
+router::BasicRouter(ID 5, PORT_NUMBER 2);
 rp1->[0]router[0]->rp1;
 rp2->[1]router[1]->rp2;

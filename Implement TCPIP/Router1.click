@@ -16,7 +16,7 @@ rp1 :: LossyRouterPort(DEV $dev2, IN_MAC $addrDev2 , OUT_MAC $addrDev1, LOSS 1, 
 rp2 :: LossyRouterPort(DEV $dev3, IN_MAC $addrDev3 , OUT_MAC $addrDev4, LOSS 1, DELAY 0.2 );
 rp3 :: LossyRouterPort(DEV $dev7, IN_MAC $addrDev7 , OUT_MAC $addrDev8, LOSS 1, DELAY 0.2 );
 
-router::BasicRouter(ID 2);
+router::BasicRouter(ID 2, PORT_NUMBER 3);
 rp1->[0]router[0]->rp1;
 rp2->[1]router[1]->rp2;
 rp3->[2]router[2]->rp3;
