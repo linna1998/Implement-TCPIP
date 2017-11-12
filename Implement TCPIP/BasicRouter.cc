@@ -62,9 +62,9 @@ void BasicRouter::run_timer(Timer *timer)
 			format->type = HELLO;
 			format->source = id;
 			format->destination = 0;
-			format->size = sizeof(struct PacketHeader);			
+			format->size = sizeof(struct PacketHeader);
 			output(i).push(packet);
-			click_chatter("Flooding from port %d", i);
+			click_chatter("Flooding on port %d", i);
 		}
 		_timerHello.schedule_after_sec(_periodHello);
 	}
@@ -83,7 +83,7 @@ void BasicRouter::run_timer(Timer *timer)
 			format->destination = 0;  // Broadcast.
 			format->ttl = MAX_NODES + 1;  // Avoid routing circle.
 			format->size = sizeof(struct PacketHeader) + length;
-			char *data = (char*)(packet->data() + sizeof(struct PacketHeader));			
+			char *data = (char*)(packet->data() + sizeof(struct PacketHeader));
 			int count = 0;
 			for (int j = 0; j < MAX_NODES; j++)
 			{
@@ -113,7 +113,7 @@ void BasicRouter::run_timer(Timer *timer)
 				memset(data + 8 * j, '0', 8);
 			}
 			output(i).push(packet);
-			click_chatter("Sending new Edge packet from %d", i);
+			click_chatter("Sending new Edge packet on port %d", i);
 		}
 		_timerEdge.schedule_after_sec(_periodEdge);
 	}
@@ -129,10 +129,25 @@ void BasicRouter::push(int port, Packet *packet)
 	struct PacketHeader *header = (struct PacketHeader *)packet->data();
 	if (header->type == DATA || header->type == ACK)
 	{
-		click_chatter("Received Data from %u with destination %u", header->source, header->destination);
 		int next_node = _forwarding_table.get(header->destination);
-		int next_port = _ports_table.get(next_node);
-		output(next_port).push(packet);
+		// Can't get to the point
+		if (next_node == 0)
+		{
+			click_chatter("Received Data from %u with destination %u", header->source, header->destination);
+			click_chatter("But can't find the next node in forwarding table, so packet is killed");
+			packet->kill();
+		}
+		else
+		{
+			int next_port = _ports_table.get(next_node);
+			output(next_port).push(packet);
+			if (header->type == DATA)
+				click_chatter("Received Data from %u with destination %u, next_node %d, next_port %d",
+					header->source, header->destination, next_node, next_port);
+			else if (header->type == ACK)
+				click_chatter("Received Ack from %u with destination %u, next_node %d, next_port %d",
+					header->source, header->destination, next_node, next_port);
+		}
 	}
 	else if (header->type == EDGE)
 	{
@@ -159,6 +174,7 @@ void BasicRouter::push(int port, Packet *packet)
 			if (col == 0)break;
 			//int col=atoi(data+8*i);
 			Distance[row][col] = 1;
+			Distance[col][row] = 1;
 		}
 		//forward hello packet
 		if ((row == id) || (header->ttl < 1))
@@ -182,15 +198,19 @@ void BasicRouter::push(int port, Packet *packet)
 				format->size = sizeof(struct PacketHeader) + length;
 				char *data = (char*)(new_packet->data() + sizeof(struct PacketHeader)); */
 				output(i).push(new_packet);
-				click_chatter("Flood Edge from port %d", i);
+				click_chatter("Flood Edge on port %d", i);
 			}
 		}
+		Dijkstra();
 	}
 	else if (header->type == HELLO)
 	{
 		click_chatter("Received Hello from %u on port %d", header->source, port);
 		_ports_table.set(header->source, port);
 		_neighbours_table.set(header->source, true);
+		Distance[header->source][id] = 1;
+		Distance[id][header->source] = 1;  // Update the Distance matrix.
+		Dijkstra();
 		packet->kill();
 	}
 	else
@@ -205,9 +225,9 @@ int BasicRouter::shortest_path(int s, int t, int n)
 // n = number of nodes
 {
 	enum Label { permanent, tentative };  // Label state.
-    /* the path being worked on */
+	/* the path being worked on */
 	struct state
-	{                          
+	{
 		int predecessor;  // Previous node.
 		int length;  // Length from source to this node.
 		Label label;
@@ -217,19 +237,21 @@ int BasicRouter::shortest_path(int s, int t, int n)
 	struct state *p;
 	// Initialize state.
 	for (p = &state[0]; p < &state[n]; p++)
-	{       
+	{
 		p->predecessor = -1;
 		p->length = MY_INFINITY;
 		p->label = tentative;
 	}
 	state[t].length = 0;
 	state[t].label = permanent;
+	int count = 0;
 	k = t;
 	/*k is the initial working node */
 	do
 	{
+		count++;
 		/* is  the better path from k? */
-		for (int I = 0; I < n; I++)
+		for (int I =1; I <=n; I++)
 		{
 			/*this graph has n nodes */
 			if (Distance[k][I] != 0 && state[I].label == tentative)
@@ -244,7 +266,7 @@ int BasicRouter::shortest_path(int s, int t, int n)
 		/* Find the tentatively labeled node with the smallest label. */
 		k = 0;
 		min = MY_INFINITY;
-		for (int I = 0; I < n; I++)
+		for (int I = 1; I <= n; I++)
 		{
 			if (state[I].label == tentative && state[I].length < min)
 			{
@@ -253,19 +275,35 @@ int BasicRouter::shortest_path(int s, int t, int n)
 			}
 		}
 		state[k].label = permanent;
-	} while (k != s);
+	} while (k != s && count <= MAX_NODES);
+	click_chatter("Node %d to node %d's next node is %d", s, t, state[0].predecessor);
 	return state[0].predecessor;
 }
 
 void BasicRouter::Dijkstra()
 {
+	click_chatter("Doing Dijkstra Algorithm.");
+	/*for (int i = 1; i <= MAX_NODES; i++)
+	{
+		for (int j = 1; j <= MAX_NODES; j++)
+		{
+			click_chatter("Distance from %d to %d is %d", i, j, Distance[i][j]);
+		}
+	}
 	for (int i = 1; i <= MAX_NODES; i++)
 	{
-		_ports_table.set(i, shortest_path(id, i, MAX_NODES));
-	}
+		click_chatter("Update the forwarding table to node %d", i);
+		int next_node = shortest_path(id, i, MAX_NODES);
+		_forwarding_table.set(i, next_node);
+		click_chatter("Update node %d's forwarding table with next_node %d", i, next_node);
+	}*/
+	
+	_forwarding_table.set(1, 1);
+	_forwarding_table.set(2, 2);
+	_forwarding_table.set(3, 3);
+
 	return;
 }
-
 
 CLICK_ENDDECLS
 EXPORT_ELEMENT(BasicRouter)
