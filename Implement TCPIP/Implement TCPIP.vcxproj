@@ -113,13 +113,18 @@
   <ItemGroup>
     <ClInclude Include="BasicClassifier.hh" />
     <ClInclude Include="BasicRouter.hh" />
-    <ClInclude Include="Client.hh" />
-    <ClInclude Include="Packets.hh" />
+    <ClInclude Include="IPClient.hh" />
+    <ClInclude Include="IPPackets.hh" />
+    <ClInclude Include="TCPClient.hh" />
+    <ClInclude Include="TCPPackets.hh" />
+    <ClInclude Include="UserClient.hh" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicClassifier.cc" />
     <ClCompile Include="BasicRouter.cc" />
-    <ClCompile Include="Client.cc" />
+    <ClCompile Include="IPClient.cc" />
+    <ClCompile Include="TCPClient.cc" />
+    <ClCompile Include="UserClient.cc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Client1.click" />

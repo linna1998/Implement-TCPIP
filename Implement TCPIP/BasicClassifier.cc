@@ -4,7 +4,7 @@
 #include <click/timer.hh>
 #include <click/packet.hh>
 #include "BasicClassifier.hh" 
-#include "Packets.hh"
+#include "TCPPackets.hh"
 
 CLICK_DECLS
 
@@ -18,23 +18,24 @@ int BasicClassifier::initialize(ErrorHandler *errh)
 
 void BasicClassifier::push(int port, Packet *packet)
 {
+	// Classify packets ,then send them to TCP layer.
 	assert(packet);
-	struct PacketHeader *header = (struct PacketHeader *)packet->data();
-	if (header->type == 0)
+	struct TCPPacketHeader *header = (struct TCPPacketHeader *)packet->data();
+	if (header->type == DATA)
 	{
 		output(0).push(packet);
 	}
-	else if (header->type == 1)
+	else if (header->type == HELLO || header->type == EDGE)
 	{
 		output(1).push(packet);
 	}
-	else if (header->type == 2)
+	else if (header->type == ACK)
 	{
 		output(2).push(packet);
 	}
 	else
 	{
-		click_chatter("Wrong packet type");
+		// Wrong packet type.
 		packet->kill();
 	}
 }

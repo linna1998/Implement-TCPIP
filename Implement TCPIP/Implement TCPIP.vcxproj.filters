@@ -21,10 +21,19 @@
     <ClInclude Include="BasicRouter.hh">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Client.hh">
+    <ClInclude Include="IPClient.hh">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Packets.hh">
+    <ClInclude Include="TCPClient.hh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPPackets.hh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IPPackets.hh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UserClient.hh">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +44,13 @@
     <ClCompile Include="BasicRouter.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Client.cc">
+    <ClCompile Include="IPClient.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPClient.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="UserClient.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
